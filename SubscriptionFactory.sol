@@ -1,8 +1,9 @@
 pragma solidity >=0.5.0 <0.6.0;
 
 import "./SafeMath.sol";
+import "./CarFactory.sol";
 
-contract SubscriptionFactory {
+contract SubscriptionFactory is CarFactory {
     
     using SafeMath32 for uint32;
     
@@ -23,21 +24,21 @@ contract SubscriptionFactory {
         return subscriptions[_idSubscription].dateExp;
     }
     
-    function createWeeklySubscription(uint32 _idCar) public payable {
+    function createWeeklySubscription(uint32 _idCar) public payable isCarOwner(_idCar) {
         require(msg.value >= weeklyFee);
         uint32 dateExp = uint32(now).add(1 weeks);
         uint32 id = uint32(subscriptions.push(Subscription(dateExp, _idCar))).sub(1);
         emit NewSubscription(id, dateExp, _idCar);
     }
     
-    function createMonthlySubscription(uint32 _idCar) public payable {
+    function createMonthlySubscription(uint32 _idCar) public payable isCarOwner(_idCar) {
         require(msg.value >= monthlyFee);
         uint32 dateExp = uint32(now).add(4 weeks);
         uint32 id = uint32(subscriptions.push(Subscription(dateExp, _idCar))).sub (1);
         emit NewSubscription(id, dateExp, _idCar);
     }
     
-    function createYearlySubscription(uint32 _idCar) public payable {
+    function createYearlySubscription(uint32 _idCar) public payable isCarOwner(_idCar) {
         require(msg.value >= yearlyFee);
         uint32 dateExp = uint32(now).add(48 weeks);
         uint32 id = uint32(subscriptions.push(Subscription(dateExp, _idCar))).sub(1);

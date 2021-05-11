@@ -12,14 +12,21 @@ contract CarFactory is Ownable {
     struct Car{
         string number;
         uint32 entryDate;
+        int enteredParkId;
     }
     
     Car[] public cars;
 
     mapping (uint => address) public carToOwner;
+    
+    modifier isCarOwner(uint _carId) {
+        require(msg.sender == carToOwner[_carId]);
+    _;
+    }
+
 
     function createCar(string memory _number) public {
-        uint32 id = uint32(cars.push(Car(_number, 0))).sub(1);
+        uint32 id = uint32(cars.push(Car(_number, 0, int(-1)))).sub(1);
         carToOwner[id] = msg.sender;
         emit NewCar(id, _number);
     }
@@ -28,12 +35,20 @@ contract CarFactory is Ownable {
         cars[_id].entryDate = uint32(now);
     }
     
+    function _setEnteredParkId(uint32 _id, int _parkId) internal {
+        cars[_id].enteredParkId = _parkId;
+    }
+    
     function _getEntryDate(uint32 _id) internal view returns(uint32) {
         return cars[_id].entryDate;
     }
     
     function _resetEntryDate(uint32 _id) internal returns(uint32) {
         cars[_id].entryDate = uint32(0);
+    }
+    
+    function _resetEnteredParkId(uint32 _id) internal returns(uint32) {
+        cars[_id].enteredParkId = int(-1);
     }
     
     function _timeInPark(uint32 _id) internal view returns(uint32){

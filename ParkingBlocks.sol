@@ -1,10 +1,9 @@
 pragma solidity >=0.5.0 <0.6.0;
 
-import "./CarFactory.sol";
 import "./SubscriptionFactory.sol";
 import "./SafeMath.sol";
 
-contract ParkingBlocks is CarFactory, SubscriptionFactory{
+contract ParkingBlocks is SubscriptionFactory{
     
     using SafeMath32 for uint32;
     
@@ -18,7 +17,7 @@ contract ParkingBlocks is CarFactory, SubscriptionFactory{
         uint32 availableParkingPlaces;
     }
     
-    function createPark(uint32 _totalParkingPlaces) public {
+    function createPark(uint32 _totalParkingPlaces) public onlyOwner {
         uint32 id = uint32(parks.push(Park(_totalParkingPlaces, _totalParkingPlaces))).sub(1);
         emit NewPark(id, _totalParkingPlaces);
     }
@@ -28,19 +27,24 @@ contract ParkingBlocks is CarFactory, SubscriptionFactory{
         require(parks[_parkId].availableParkingPlaces > 0);
         parks[_parkId].availableParkingPlaces = parks[_parkId].availableParkingPlaces.sub(1);
         _setEntryDate(_idCar);
+        _setEnteredParkId(_idCar, int(_parkId));
     }
 
     function exit(uint32 _parkId, uint32 _carId) public payable {
         uint32 etherValue = payValue(_carId);
+        require(_parkId == cars[_carId].enteredParkId);
         require(msg.value >= etherValue);
         _exitPark(_carId);
         parks[_parkId].availableParkingPlaces = parks[_parkId].availableParkingPlaces.add(1);
+        _resetEnteredParkId(_carId);
     }
     
     function exitWithSubscription(uint32 _parkId, uint32 _carId, uint32 _idSubscription) public {
+        require(_parkId == cars[_carId].enteredParkId);
         require(_getDateExp(_idSubscription) > uint(now));
         _exitPark(_carId);
         parks[_parkId].availableParkingPlaces = parks[_parkId].availableParkingPlaces.add(1);
+        _resetEnteredParkId(_carId);
     }
     
     function payValue(uint32 _carId) public view returns(uint32) {
