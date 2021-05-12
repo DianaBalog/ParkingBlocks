@@ -30,21 +30,17 @@ contract ParkingBlocks is SubscriptionFactory{
         _setEnteredParkId(_idCar, int(_parkId));
     }
 
-    function exit(uint32 _parkId, uint32 _carId) public payable {
+    function exit(uint32 _carId) public payable {
         uint32 etherValue = payValue(_carId);
-        require(_parkId == cars[_carId].enteredParkId);
         require(msg.value >= etherValue);
+        parks[uint32(cars[_carId].enteredParkId)].availableParkingPlaces = parks[uint32(cars[_carId].enteredParkId)].availableParkingPlaces.add(1);
         _exitPark(_carId);
-        parks[_parkId].availableParkingPlaces = parks[_parkId].availableParkingPlaces.add(1);
-        _resetEnteredParkId(_carId);
     }
     
-    function exitWithSubscription(uint32 _parkId, uint32 _carId, uint32 _idSubscription) public {
-        require(_parkId == cars[_carId].enteredParkId);
-        require(_getDateExp(_idSubscription) > uint(now));
+    function exitWithSubscription(uint32 _carId) public {
+        require(_getDateExp(uint32(cars[_carId].subscriptionId)) > uint(now));
+        parks[uint32(cars[_carId].enteredParkId)].availableParkingPlaces = parks[uint32(cars[_carId].enteredParkId)].availableParkingPlaces.add(1);
         _exitPark(_carId);
-        parks[_parkId].availableParkingPlaces = parks[_parkId].availableParkingPlaces.add(1);
-        _resetEnteredParkId(_carId);
     }
     
     function payValue(uint32 _carId) public view returns(uint32) {

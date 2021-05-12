@@ -12,6 +12,7 @@ contract CarFactory is Ownable {
     struct Car{
         string number;
         uint32 entryDate;
+        int subscriptionId;
         int enteredParkId;
     }
     
@@ -26,7 +27,7 @@ contract CarFactory is Ownable {
 
 
     function createCar(string memory _number) public {
-        uint32 id = uint32(cars.push(Car(_number, 0, int(-1)))).sub(1);
+        uint32 id = uint32(cars.push(Car(_number, 0, int(-1), int(-1)))).sub(1);
         carToOwner[id] = msg.sender;
         emit NewCar(id, _number);
     }
@@ -58,5 +59,6 @@ contract CarFactory is Ownable {
     
     function _exitPark(uint32 _id) internal {
         _resetEntryDate(_id);
+        _resetEnteredParkId(_id);
     }
 }
